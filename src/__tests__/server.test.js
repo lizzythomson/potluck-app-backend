@@ -1,7 +1,7 @@
 const request = require('supertest');
 const server = require('../server');
 const db = require('../data/db-config');
-const usersModel = '../users/users-model';
+const usersModel = require('../users/users-model');
 
 beforeAll(async () => {
   await db.migrate.rollback();
@@ -45,11 +45,11 @@ describe('test the usersModel', () => {
     expect(users).toHaveLength(8);
   });
   test('[3] can get by id', async () => {
-    const { id } = await usersModel.insertUser({
+    const { user_id } = await usersModel.insertUser({
       username: 'paulSwift',
       password: '12345',
     });
-    const result = await usersModel.findById(id);
-    expect(result).toHaveProperty('username', 'paulSwift');
+    const result = await usersModel.findById(user_id);
+    expect(result[0]).toHaveProperty('username', 'paulSwift');
   });
 });

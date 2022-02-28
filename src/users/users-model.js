@@ -5,7 +5,7 @@ function findAll() {
 }
 
 function findById(id) {
-  return db('users').where('user_id', id).first();
+  return db('users').where('user_id', id);
 }
 
 function findBy(filter) {
@@ -23,13 +23,8 @@ async function insertUser(user) {
   return newUserObject; // { user_id: 7, username: 'foo', password: 'xxxxxxx' }
 }
 
-async function insert(user) {
-  const [id] = await db('users').insert(user);
-  return findById(id);
-}
-
-async function updateName(id, changes) {
-  await db('users').update({ name: changes.name }).where('user_id', id);
+async function updateUserById(id, changes) {
+  await db('users').update(changes).where('user_id', id);
   return findById(id);
 }
 
@@ -43,8 +38,7 @@ module.exports = {
   findAll,
   findBy,
   findById,
-  insert,
   insertUser,
-  updateName,
+  updateUserById,
   deleteUser,
 };
