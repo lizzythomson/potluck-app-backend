@@ -30,22 +30,22 @@ describe('test the usersModel', () => {
     expect(users).toHaveLength(6);
   });
   test('[2] multiple users get inserted', async () => {
-    await usersModel.insert({
+    await usersModel.insertUser({
       username: 'saraWinters',
       password: '12345',
     });
-    let books = await db('users');
-    expect(books).toHaveLength(1);
+    let users = await db('users');
+    expect(users).toHaveLength(7);
 
-    await usersModel.insert({
+    await usersModel.insertUser({
       username: 'annieJohnson',
       password: '7890',
     });
-    books = await db('users');
-    expect(books).toHaveLength(2);
+    users = await db('users');
+    expect(users).toHaveLength(8);
   });
   test('[3] can get by id', async () => {
-    const { id } = await usersModel.insert({
+    const { id } = await usersModel.insertUser({
       username: 'paulSwift',
       password: '12345',
     });
