@@ -12,32 +12,22 @@ const {
 const router = express.Router();
 
 router.post('/register', validBody, duplicateName, async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const hash = bcrypt.hashSync(password, 4);
-    const user = { username, password: hash };
-    const createdUser = await usersModel.insertUser(user);
-    res.status(201).json(createdUser);
-  } catch {
-    res.status(500).json({ message: 'server error, please try again later' });
-  }
+  const { username, password } = req.body;
+  const hash = bcrypt.hashSync(password, 4);
+  const user = { username, password: hash };
+  const createdUser = await usersModel.insertUser(user);
+  res.status(201).json(createdUser);
 });
 
-router.post('/login', validBody, verifyUsernameExists, (req, res) => {
+router.post('/login', validBody, verifyUsernameExists, async (req, res) => {
   const { username, password } = req.body;
-  usersModel
-    .findBy({ username })
-    .then(([user]) => {
-      if (user && bcrypt.compareSync(password, user.password)) {
-        const token = generateToken(user);
-        res.status(200).json({ message: `welcome, ${username}`, token });
-      } else {
-        res.status(401).json({ message: 'invalid credentials' });
-      }
-    })
-    .catch(() => {
-      res.status(500).json({ message: 'server error, please try again later' });
-    });
+  const [user] = await usersModel.findBy({ username });
+  if (user && bcrypt.compareSync(password, user.password)) {
+    const token = generateToken(user);
+    res.status(200).json({ message: `welcome, ${username}`, token });
+  } else {
+    res.status(401).json({ message: 'invalid credentials' });
+  }
 });
 
 function generateToken(user) {
