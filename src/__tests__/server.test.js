@@ -1,3 +1,4 @@
+// These tests will only pass if the seed files are not changed and run
 const request = require('supertest');
 const server = require('../server');
 const db = require('../data/db-config');
@@ -367,78 +368,199 @@ describe('test the itemsModel', () => {
     const items = await db('items');
     expect(items).toHaveLength(6);
   });
-  // test('[21] multiple items get inserted', async () => {
-  //   await usersModel.insertUser({
-  //     username: 'saraWinters',
-  //     password: '12345',
-  //   });
-  //   let users = await db('users');
-  //   expect(users).toHaveLength(7);
+  test('[21] multiple items get inserted', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+    const inviteeOne = await usersModel.insertUser({
+      username: 'hannahSmith',
+      password: '12345',
+    });
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
 
-  //   await usersModel.insertUser({
-  //     username: 'annieJohnson',
-  //     password: '7890',
-  //   });
-  //   users = await db('users');
-  //   expect(users).toHaveLength(8);
-  // });
-  // test('[4] can get by id', async () => {
-  //   const { user_id } = await usersModel.insertUser({
-  //     username: 'paulSwift',
-  //     password: '12345',
-  //   });
-  //   const result = await usersModel.findById(user_id);
-  //   expect(result[0]).toHaveProperty('username', 'paulSwift');
-  // });
-  // test('[22] can update user', async () => {
-  //   const newUser = await usersModel.insertUser({
-  //     username: 'gessicaStone',
-  //     password: '12345',
-  //   });
-  //   const result = await usersModel.findById(newUser.user_id);
-  //   expect(result[0]).toHaveProperty('username', 'gessicaStone');
-  //   await usersModel.updateUserById(newUser.user_id, {
-  //     username: 'jessicaStone',
-  //   });
-  //   const actual = await usersModel.findById(newUser.user_id);
-  //   expect(actual[0]).toHaveProperty('username', 'jessicaStone');
-  // });
-  // test('[23] can delete user', async () => {
-  //   const startingUsers = await db('users');
-  //   expect(startingUsers).toHaveLength(6);
-  //   const { user_id } = await usersModel.insertUser({
-  //     username: 'gabbyRaines',
-  //     password: '12345',
-  //   });
-  //   const users = await db('users');
-  //   expect(users).toHaveLength(7);
-  //   await usersModel.deleteUser(user_id);
-  //   const endingUsers = await db('users');
-  //   expect(endingUsers).toHaveLength(6);
-  //   expect(endingUsers).not.toHaveProperty('username', 'gabbyRaines');
-  // });
+    await itemsModel.insertItem({
+      item_name: 'Green Salad',
+      user_id: inviteeOne.user_id,
+      event_id: event_id,
+    });
+
+    const items = await db('items');
+    expect(items).toHaveLength(7);
+
+    await itemsModel.insertItem({
+      item_name: 'Potato Salad',
+      event_id: event_id,
+      user_id: inviteeOne.user_id,
+    });
+
+    await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+      user_id: inviteeOne.user_id,
+    });
+
+    const endingItems = await db('items');
+    expect(endingItems).toHaveLength(9);
+    expect(endingItems[8]).toHaveProperty('item_name', 'Jello Salad');
+    expect(endingItems[8]).toHaveProperty('user_id', inviteeOne.user_id);
+  });
+  test('[22] insert an item without a user_id', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
+
+    await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+    });
+
+    const endingItems = await db('items');
+    expect(endingItems).toHaveLength(7);
+    expect(endingItems[6]).toHaveProperty('item_name', 'Jello Salad');
+    expect(endingItems[6]).toHaveProperty('user_id', null);
+  });
+  test('[23] can get item by id', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
+
+    const { item_id } = await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+    });
+
+    const result = await itemsModel.findById(item_id);
+    expect(result[0]).toHaveProperty('item_name', 'Jello Salad');
+  });
+  test('[24] can update item name', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
+
+    const { item_id } = await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+    });
+
+    const result = await itemsModel.findById(item_id);
+    expect(result[0]).toHaveProperty('item_name', 'Jello Salad');
+
+    await itemsModel.updateItemById(item_id, {
+      item_name: 'Fruit Salad',
+    });
+
+    const actual = await itemsModel.findById(item_id);
+    expect(actual[0]).toHaveProperty('item_name', 'Fruit Salad');
+  });
+  test('[25] can update item to have user_id', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+
+    const inviteeOne = await usersModel.insertUser({
+      username: 'hannahSmith',
+      password: '12345',
+    });
+
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
+
+    const { item_id } = await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+    });
+
+    const result = await itemsModel.findById(item_id);
+    expect(result[0]).toHaveProperty('user_id', null);
+
+    await itemsModel.updateItemById(item_id, {
+      user_id: inviteeOne.user_id,
+    });
+
+    const actual = await itemsModel.findById(item_id);
+    expect(actual[0]).toHaveProperty('user_id', 8);
+  });
+  test('[26] can delete user', async () => {
+    const { user_id } = await usersModel.insertUser({
+      username: 'joyceSmith',
+      password: '12345',
+    });
+    const { event_id } = await eventsModel.insertEvent({
+      event_name: 'Family Potluck',
+      date_time: new Date('March 31, 2023 15:30').toISOString(),
+      location: `Oak Meadow Park`,
+      owner_id: user_id,
+    });
+
+    const { item_id } = await itemsModel.insertItem({
+      item_name: 'Jello Salad',
+      event_id: event_id,
+    });
+
+    const result = await itemsModel.findById(item_id);
+    expect(result[0]).toHaveProperty('item_name', 'Jello Salad');
+    const items = await db('items');
+    expect(items).toHaveLength(7);
+
+    await itemsModel.deleteItem(result[0].item_id);
+    const endingItems = await db('items');
+    expect(endingItems).toHaveLength(6);
+    expect(endingItems).not.toHaveProperty('item_name', 'Jello Salad');
+  });
 });
 
 describe('[POST] /api/auth/register', () => {
-  test('[24] responds with correct message on empty body', async () => {
+  test('[27] responds with correct message on empty body', async () => {
     const result = await request(server)
       .post('/api/auth/register')
       .send({ username: '', password: '' });
     expect(result.body.message).toMatch(/username and password required/i);
   });
-  test('[25] responds with correct message on empty username', async () => {
+  test('[28] responds with correct message on empty username', async () => {
     const result = await request(server)
       .post('/api/auth/register')
       .send({ username: '', password: '12345' });
     expect(result.body.message).toMatch(/username and password required/i);
   });
-  test('[26] responds with correct message on empty password', async () => {
+  test('[29] responds with correct message on empty password', async () => {
     const result = await request(server)
       .post('/api/auth/register')
       .send({ username: 'sammy', password: '' });
     expect(result.body.message).toMatch(/username and password required/i);
   });
-  test('[27] responds with the correct message on valid credentials', async () => {
+  test('[30] responds with the correct message on valid credentials', async () => {
     const result = await request(server)
       .post('/api/auth/register')
       .send({ username: 'sara', password: '1234' });
@@ -446,7 +568,7 @@ describe('[POST] /api/auth/register', () => {
   });
 });
 describe('[POST] /api/auth/login', () => {
-  test('[28] responds with correct message on valid credentials', async () => {
+  test('[31] responds with correct message on valid credentials', async () => {
     await request(server)
       .post('/api/auth/register')
       .send({ username: 'cammie', password: '1234' });
@@ -455,7 +577,7 @@ describe('[POST] /api/auth/login', () => {
       .send({ username: 'cammie', password: '1234' });
     expect(result.body.message).toMatch(/welcome, cammie/i);
   });
-  test('[29] responds with correct message on invalid password', async () => {
+  test('[32] responds with correct message on invalid password', async () => {
     await request(server)
       .post('/api/auth/register')
       .send({ username: 'jenny', password: '1234' });
@@ -464,7 +586,7 @@ describe('[POST] /api/auth/login', () => {
       .send({ username: 'jenny', password: '8765' });
     expect(result.body.message).toMatch(/invalid credentials/i);
   });
-  test('[30] responds with correct message on invalid username', async () => {
+  test('[33] responds with correct message on invalid username', async () => {
     await request(server)
       .post('/api/auth/register')
       .send({ username: 'ally', password: '1234' });
@@ -475,8 +597,46 @@ describe('[POST] /api/auth/login', () => {
   });
 });
 
+describe('[GET] /api/users', () => {
+  test('[34] if incorrect user is not login', async () => {
+    const result = await request(server).get('/api/users');
+    expect(result.body.message).toMatch(/token required/i);
+  });
+  test('[35] all users are displayed', async () => {
+    await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'abby', password: '1234' });
+    await request(server)
+      .post('/api/auth/login')
+      .send({ username: 'abby', password: '1234' });
+    const result = await request(server).get('/api/users');
+    expect(result.body.message).toMatch(/oops/i);
+  });
+});
+
+// describe('[POST] /api/users', () => {
+//   test('[33] if incorrect credentials');
+//   test('[34] returns new created user');
+// });
+
+// describe('[PUT] /api/users', () => {
+//   test('[35] if incorrect credentials');
+//   test('[36] updates user');
+// });
+
+// describe('[DELETE] /api/users', () => {
+//   test('[37] if incorrect credentials');
+//   test('[38] deletes user');
+// });
+
+// describe('[GET] /api/events/:owner_id', () => {
+//   test('[39] if incorrect credentials');
+//   test('[40] all events are displayed that owner created');
+// });
+
 describe('[POST] /api/events', () => {
-  test('[31] a new event is inserted', async () => {
+  // test('[41] if incorrect credentials');
+  test('[42] a new event is inserted', async () => {
     const result = await request(server)
       .post('/api/auth/register')
       .send({ username: 'alphabetOrganizer', password: '1234' });
@@ -490,3 +650,58 @@ describe('[POST] /api/events', () => {
     expect(events).toHaveLength(7);
   });
 });
+
+// describe('[PUT] /api/events', () => {
+//   test('[43] if incorrect credentials');
+//   test('[44] an event is updated');
+// });
+
+// describe('[DELETE] /api/events', () => {
+//   test('[45] if incorrect credentials');
+//   test('[46] an event is deleted');
+// });
+
+// describe('[GET] /api/invitations/:event_id', () => {
+//   test('[47] if incorrect credentials');
+//   test('[48] an array of invitations for an event');
+// });
+
+// describe('[POST] /api/invitations', () => {
+//   test('[49] if incorrect credentials');
+//   test('[50] an invitation is created');
+// });
+
+// describe('[PUT] /api/invitations', () => {
+//   test('[51] if incorrect credentials');
+//   test('[52] an invitation is updated');
+// });
+
+// describe('[DELETE] /api/invitations', () => {
+//   test('[53] if incorrect credentials');
+//   test('[54] an invitation is deleted');
+// });
+
+// describe('[GET] /api/items/:event_id', () => {
+//   test('[55] if incorrect credentials');
+//   test('[56] an array of items for an event is displayed');
+// });
+
+// describe('[POST] /api/items', () => {
+//   test('[57] if incorrect credentials');
+//   test('[58] an item is created');
+// });
+
+// describe('[PUT] /api/items', () => {
+//   test('[59] if incorrect credentials');
+//   test('[60] an item is updated');
+// });
+
+// describe('[DELETE] /api/items', () => {
+//   test('[61] if incorrect credentials');
+//   test('[62] an item is deleted');
+// });
+
+// describe('[???] /api/logout', () => {
+//   test('[63] if incorrect credentials');
+//   test('[64] logout successfully');
+// });

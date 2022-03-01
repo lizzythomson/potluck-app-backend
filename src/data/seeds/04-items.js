@@ -1,29 +1,29 @@
 exports.seed = function (knex) {
   return knex('items').insert([
     {
-      name: 'Dessert',
+      item_name: 'Dessert',
       event_id: 1,
     },
     {
-      name: 'Dessert',
-      event_id: 1,
-      user_id: 3,
-    },
-    {
-      name: 'Salad',
+      item_name: 'Dessert',
       event_id: 1,
       user_id: 3,
     },
     {
-      name: 'Casserole',
+      item_name: 'Salad',
+      event_id: 1,
+      user_id: 3,
+    },
+    {
+      item_name: 'Casserole',
       event_id: 1,
     },
     {
-      name: 'Dessert',
+      item_name: 'Dessert',
       event_id: 2,
     },
     {
-      name: 'Salad',
+      item_name: 'Salad',
       event_id: 2,
     },
   ]);

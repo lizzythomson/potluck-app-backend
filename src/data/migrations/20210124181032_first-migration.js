@@ -21,7 +21,7 @@ exports.up = async (knex) => {
     })
     .createTable('items', (items) => {
       items.increments('item_id');
-      items.string('name', 200).notNullable();
+      items.string('item_name', 200).notNullable();
       items
         .integer('event_id')
         .unsigned()

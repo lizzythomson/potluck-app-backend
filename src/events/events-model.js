@@ -13,8 +13,6 @@ function findBy(filter) {
 }
 
 async function insertEvent(event_id) {
-  // WITH POSTGRES WE CAN PASS A "RETURNING ARRAY" AS 2ND ARGUMENT TO knex.insert/update
-  // AND OBTAIN WHATEVER COLUMNS WE NEED FROM THE NEWLY CREATED/UPDATED RECORD
   const [newEvent_Object] = await db('events').insert(event_id, [
     'event_id',
     'event_name',
@@ -22,7 +20,7 @@ async function insertEvent(event_id) {
     'location',
     'owner_id',
   ]);
-  return newEvent_Object; // { event_id: 7, username: 'foo', password: 'xxxxxxx' }
+  return newEvent_Object;
 }
 
 async function updateEventById(id, changes) {
