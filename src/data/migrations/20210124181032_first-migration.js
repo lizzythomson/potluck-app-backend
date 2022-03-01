@@ -36,6 +36,7 @@ exports.up = async (knex) => {
       items.timestamp('created_at').defaultTo(knex.fn.now());
     })
     .createTable('invitations', (invitations) => {
+      invitations.increments('invitation_id');
       invitations
         .integer('user_id')
         .unsigned()
