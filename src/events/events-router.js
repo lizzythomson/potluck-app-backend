@@ -25,8 +25,9 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   const eventId = parseInt(req.params.id);
-  const { owner_id } = await eventsModel.findById(eventId);
+  const eventRes = await eventsModel.findById(eventId);
   const user_id = req.user_id;
+  const owner_id = eventRes[0].owner_id;
   if (user_id !== owner_id) {
     res.json({ message: `invalid credentials` });
   } else {
@@ -35,14 +36,15 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
-  const id = parseInt(req.params.id);
-  const { owner_id } = await eventsModel.findById(id);
+router.delete('/:event_id', async (req, res) => {
+  const { event_id } = req.params;
+  const eventRes = await eventsModel.findById(event_id);
+  const owner_id = eventRes[0].owner_id;
   const user_id = req.user_id;
   if (user_id !== owner_id) {
     res.json({ message: `invalid credentials` });
   } else {
-    const result = await eventsModel.deleteEvent(id);
+    const result = await eventsModel.deleteEvent(event_id);
     res.json(result);
   }
 });

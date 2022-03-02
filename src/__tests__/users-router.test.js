@@ -98,7 +98,6 @@ describe('[DELETE] /api/users', () => {
     const result = await request(server)
       .delete(`/api/users/${res.body.user_id}`)
       .set('Authorization', token);
-    console.log('Jello', result.body[0]);
     expect(result.body[0]).toHaveProperty('username', 'abby');
   });
 });
