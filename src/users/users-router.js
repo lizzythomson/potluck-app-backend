@@ -3,11 +3,13 @@ const usersModel = require('./users-model');
 
 const router = express.Router();
 
+// A user can view all users
 router.get('/', async (req, res) => {
   const users = await usersModel.findAll();
   res.json(users);
 });
 
+// A user can update their own user info
 router.put('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   const user_id = req.user_id;
@@ -19,6 +21,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// A user can delete their account
 router.delete('/:id', async (req, res) => {
   const id = parseInt(req.params.id);
   const user_id = req.user_id;

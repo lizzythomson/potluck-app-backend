@@ -3,6 +3,7 @@ const eventsModel = require('./events-model');
 
 const router = express.Router();
 
+// Owner can see all their events they created
 router.get('/', async (req, res) => {
   const user_id = req.user_id;
   const events = await eventsModel.findAll();
@@ -18,11 +19,13 @@ router.get('/', async (req, res) => {
   }
 });
 
+// A new event can be created
 router.post('/', async (req, res) => {
   const newEvent = await eventsModel.insertEvent(req.body);
   res.json(newEvent);
 });
 
+// An event owner can update an event
 router.put('/:id', async (req, res) => {
   const eventId = parseInt(req.params.id);
   const eventRes = await eventsModel.findById(eventId);
@@ -36,6 +39,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// The event owner can delete an event
 router.delete('/:event_id', async (req, res) => {
   const { event_id } = req.params;
   const eventRes = await eventsModel.findById(event_id);

@@ -42,6 +42,7 @@ router.get('/:event_id', async (req, res) => {
   }
 });
 
+// Event owner can create new invitations
 router.post('/', async (req, res) => {
   const newInvite = await invitationsModel.insertInvitation(req.body);
   res.json(newInvite);
