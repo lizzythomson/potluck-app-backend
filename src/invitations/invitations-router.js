@@ -43,8 +43,8 @@ router.get('/:event_id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const newEvent = await invitationsModel.insertInvitation(req.body);
-  res.json(newEvent);
+  const newInvite = await invitationsModel.insertInvitation(req.body);
+  res.json(newInvite);
 });
 
 // User/Invitee updating status on invitation

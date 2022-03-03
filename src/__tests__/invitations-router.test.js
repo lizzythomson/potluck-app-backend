@@ -1,7 +1,6 @@
 const request = require('supertest');
 const server = require('../server');
 const db = require('../data/db-config');
-const eventsModel = require('../events/events-model.js');
 
 beforeAll(async () => {
   await db.migrate.rollback();

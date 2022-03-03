@@ -8,6 +8,7 @@ const usersRouter = require('./users/users-router');
 const authRouter = require('./auth/auth-router');
 const eventsRouter = require('./events/events-router');
 const invitationsRouter = require('./invitations/invitations-router');
+const itemsRouter = require('./items/items-router');
 
 const server = express();
 server.use(express.json());
@@ -18,6 +19,7 @@ server.use('/api/auth', authRouter);
 server.use('/api/users', restrict, usersRouter);
 server.use('/api/events', restrict, eventsRouter);
 server.use('/api/invitations', restrict, invitationsRouter);
+server.use('/api/items', restrict, itemsRouter);
 
 server.use((err, req, res, next) => {
   res.status(err.status || 500).json({

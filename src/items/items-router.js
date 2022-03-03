@@ -1,18 +1,29 @@
 const express = require('express');
-const itemsModel = require('./itemsModel');
+const itemsModel = require('./items-model');
 const eventsModel = require('../events/events-model');
 const invitationsModel = require('../invitations/invitations-model');
 
 const router = express.Router();
 
-// Owner of event to get all items for event
-router.get('/:event_id', async (req, res) => {
-  const event_id = parseInt(req.params.id);
+// Invitee see what items they are bringing
+router.get('/', async (req, res) => {
   const user_id = req.user_id;
-  const { owner_id } = await eventsModel.findById(event_id);
-  if (owner_id !== user_id) {
-    res.json({ message: 'invalid credentials' });
+  const items = await itemsModel.findAll();
+  const userItems = items.filter((item) => {
+    if (item.user_id === user_id) {
+      return item;
+    }
+  });
+  if (userItems.length === 0) {
+    res.json({ message: 'user has no items they are bringing yet' });
+  } else {
+    res.json(userItems);
   }
+});
+
+// User sees all items for the event
+router.get('/:event_id', async (req, res) => {
+  const event_id = parseInt(req.params.event_id);
   const items = await itemsModel.findAll();
   const eventItems = items.filter((item) => {
     if (item.event_id === event_id) {
@@ -31,38 +42,38 @@ router.post('/', async (req, res) => {
   res.json(newItem);
 });
 
-// User/Invitee selecting item to bring
+// Invitee update that they are bringing an item
 router.put('/:item_id', async (req, res) => {
-  const invitation_id = parseInt(req.params.id);
-  const { event_id } = await eventsModel.findById(event_id);
-  const invitees = await invitationsModel.findAll();
+  const item_id = parseInt(req.params.item_id);
+  const itemRes = await itemsModel.findById(item_id);
+  const event_id = itemRes[0].event_id;
+  const invitations = await invitationsModel.findAll();
   const tokenId = req.user_id;
-  const isInvited = await invitees.filter((invitee) => {
-    if (invitee.user_id === tokenId) {
+  const isInvited = invitations.filter((invitation) => {
+    if (invitation.user_id === tokenId && invitation.event_id === event_id) {
       return true;
     }
   });
-  if (isInvited === false) {
-    res.json({ message: `sorry. you weren't invited to this event` });
+  if (!isInvited[0]) {
+    res.json({ message: `invalid credentials` });
   } else {
-    const updatedInvitation = await itemsModel.updateEventById(
-      invitation_id,
-      req.body
-    );
-    res.json(updatedInvitation);
+    const updatedItem = await itemsModel.updateItemById(item_id, req.body);
+    res.json(updatedItem);
   }
 });
 
-//   Event owner deletes item
-router.delete('/:invitation_id', async (req, res) => {
-  const invitationId = parseInt(req.params.id);
-  const { event_id } = await itemsModel.findById(invitationId);
-  const { owner_id } = await eventsModel.findById(event_id);
+//   Event creator deletes item
+router.delete('/:item_id', async (req, res) => {
+  const itemId = parseInt(req.params.item_id);
+  const itemRes = await itemsModel.findById(itemId);
+  const event_id = itemRes[0].event_id;
+  const eventsRes = await eventsModel.findById(event_id);
+  const { owner_id } = eventsRes[0];
   const user_id = req.user_id;
   if (user_id !== owner_id) {
     res.json({ message: `invalid credentials` });
   } else {
-    const result = await eventsModel.deleteEvent(invitationId);
+    const result = await itemsModel.deleteItem(itemId);
     res.json(result);
   }
 });
